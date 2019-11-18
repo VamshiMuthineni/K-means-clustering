@@ -12,12 +12,12 @@ classdef HW5_BoW
             normW = 16;
             bowCs = HW5_BoW.learnDictionary(scales, normH, normW);
             
-            [trIds, trLbs] = ml_load('../bigbangtheory/train.mat',  'imIds', 'lbs');             
-            tstIds = ml_load('../bigbangtheory/test.mat', 'imIds'); 
+            [trIds, trLbs] = ml_load('../bigbangtheory_v3/train.mat',  'imIds', 'lbs');             
+            tstIds = ml_load('../bigbangtheory_v3/test.mat', 'imIds'); 
                         
             trD  = HW5_BoW.cmpFeatVecs(trIds, scales, normH, normW, bowCs);
             tstD = HW5_BoW.cmpFeatVecs(tstIds, scales, normH, normW, bowCs);
-            
+            save('q3_variable_data');
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             % Write code for training svm and prediction here            %
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -31,13 +31,13 @@ classdef HW5_BoW
             nPatch2Sample = 100000;
             
             % load train ids
-            trIds = ml_load('../bigbangtheory/train.mat', 'imIds'); 
+            trIds = ml_load('../bigbangtheory_v3/train.mat', 'imIds'); 
             nPatchPerImScale = ceil(nPatch2Sample/length(trIds)/length(scales));
                         
             randWins = cell(length(scales), length(trIds)); % to store random patches
             for i=1:length(trIds);
                 ml_progressBar(i, length(trIds), 'Randomly sample image patches');
-                im = imread(sprintf('../bigbangtheory/%06d.jpg', trIds(i)));
+                im = imread(sprintf('../bigbangtheory_v3/%06d.jpg', trIds(i)));
                 im = double(rgb2gray(im));  
                 for j=1:length(scales)
                     scale = scales(j);
@@ -66,6 +66,8 @@ classdef HW5_BoW
             % Input: randWinds contains your data points                 %
             % Output: bowCs: centroids from k-means, one column for each centroid  
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+            [bowCs,~,~,~] = k_means_cluster.k_means_clustering(randWins',1000);
+            bowCs = bowCs';
         end
                 
         function D = cmpFeatVecs(imIds, scales, normH, normW, bowCs)
@@ -74,7 +76,7 @@ classdef HW5_BoW
             startT = tic;
             for i=1:n
                 ml_progressBar(i, n, 'Computing feature vectors', startT);
-                im = imread(sprintf('../bigbangtheory/%06d.jpg', imIds(i)));                                
+                im = imread(sprintf('../bigbangtheory_v3/%06d.jpg', imIds(i)));                                
                 bowIds = HW5_BoW.cmpBowIds(im, scales, normH, normW, bowCs);                
                 feat = hist(bowIds, 1:size(bowCs,2));
                 D{i} = feat(:);
